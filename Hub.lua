@@ -1,31 +1,20 @@
--- [[ YNS V33 - SADECE SİSTEM AÇIĞI TARAYICI ]]
-local p = game.Players.LocalPlayer
+-- [[ YNS V34 - REWARDED AD EXPLOIT ]]
+local remote = game:GetService("ReplicatedStorage"):WaitForChild("RewardedAdEvent") -- Bulduğumuz kapı
 
-print("--- TARAMA BAŞLADI: AÇIKLAR ARANIYOR ---")
+print("--- REWARDED AD KAPISINA SALDIRI BAŞLADI ---")
 
--- Oyunun içindeki tüm gizli kapıları (RemoteEvents) bulalım
-for _, v in pairs(game:GetDescendants()) do
-    if v:IsA("RemoteEvent") then
-        local name = v.Name:lower()
-        
-        -- Para, Elmas veya Ödül ile ilgili anahtar kelimeler
-        if name:find("diamond") or name:find("gem") or name:find("gold") or name:find("cash") or name:find("reward") or name:find("currency") or name:find("money") then
-            
-            print("Potansiyel Açık Bulundu: " .. v.Name)
-            
-            -- Bulduğumuz her açık için ayrı bir saldırı döngüsü başlatalım
-            task.spawn(function()
-                while task.wait(0.2) do -- Sunucuyu çok yormadan 0.2 saniyede bir dene
-                    pcall(function()
-                        -- En yaygın 3 farklı kandırma yöntemini aynı anda deniyoruz
-                        v:FireServer(100)      -- Sayı gönder
-                        v:FireServer(true)     -- Onay gönder
-                        v:FireServer("Claim")  -- Komut gönder
-                    end)
-                end
-            end)
-        end
+task.spawn(function()
+    while task.wait(0.3) do -- Sunucuyu şüphelendirmemek için 0.3 saniye
+        pcall(function()
+            -- Bu kapının bekleyebileceği farklı şifreleri tek tek deniyoruz:
+            remote:FireServer("Reward")
+            remote:FireServer("Gem")
+            remote:FireServer("Diamond")
+            remote:FireServer(true)
+            remote:FireServer(100)
+            remote:FireServer("Give")
+        end)
     end
-end
+end)
 
-print("--- TARAMA TAMAMLANDI. AÇIK BULUNDUYSA SALDIRI SÜRÜYOR ---")
+print("--- SALDIRI SÜRÜYOR... ELMASLARINI KONTROL ET! ---")
