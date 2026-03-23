@@ -1,37 +1,39 @@
--- [[ YNS V300 - AGE EVOLUTION TYCOON ÖZEL HİLE ]]
-print("--- ÇAĞ ATLAMA OPERASYONU BAŞLATILDI ---")
+-- [[ YNS V320 - AGE EVOLUTION SINIRSIZ PARA BASICI ]]
+print("--- PARA MUSLUKLARI SONUNA KADAR AÇILIYOR... ---")
 
-local replicatedStorage = game:GetService("ReplicatedStorage")
 local player = game.Players.LocalPlayer
+local replicatedStorage = game:GetService("ReplicatedStorage")
 
--- 1. ADIM: Otomatik Para Toplama ve Üretim Hızlandırma
 task.spawn(function()
-    while task.wait(0.1) do 
+    while task.wait(0.1) do -- Işık hızında para isteği
         pcall(function()
-            -- Oyundaki tüm 'Event'leri tara ve tetikle
+            -- 1. ADIM: Tüm Remote kapılarını 'Para Ver' diye darlıyoruz
             for _, v in pairs(game:GetDescendants()) do
                 if v:IsA("RemoteEvent") then
                     local n = v.Name:lower()
                     
-                    -- Para toplama (Collect), Nakit (Cash), Para (Money)
-                    if n:find("collect") or n:find("money") or n:find("cash") or n:find("claim") then
-                        v:FireServer()
+                    -- Para toplama, Satma veya Nakit alma kapıları
+                    if n:find("collect") or n:find("cash") or n:find("money") or n:find("sell") or n:find("earn") then
+                        v:FireServer() -- Sunucuya 'Paramı ver' sinyali
+                        v:FireServer(999999999) -- Bazı oyunlarda miktar girilebilir
                     end
-                    
-                    -- Çağ atlama veya Birim üretme (Evolution/Spawn)
-                    if n:find("evolve") or n:find("upgrade") or n:find("buy") or n:find("spawn") then
-                        v:FireServer()
-                    end
+                end
+            end
+            
+            -- 2. ADIM: Otomatik Damlatıcı (Dropper) Hızlandırma
+            -- Eğer oyunda paralar bir yere düşüyorsa, orayı sürekli 'temizle/topla'
+            local tycoon = workspace:FindFirstChild(player.Name .. "Tycoon") or workspace:FindFirstChild("Tycoons"):FindFirstChild(player.Name)
+            if tycoon then
+                local collector = tycoon:FindFirstChild("Collector", true)
+                if collector then
+                    -- Karakterini sürekli kolektöre değdiriyormuş gibi yap
+                    firetouchinterest(player.Character.HumanoidRootPart, collector, 0)
+                    task.wait(0.01)
+                    firetouchinterest(player.Character.HumanoidRootPart, collector, 1)
                 end
             end
         end)
     end
 end)
 
--- 2. ADIM: Süper Hız ve Görünmezlik (Etrafta kimseye çarpmadan gez)
-if player.Character and player.Character:FindFirstChild("Humanoid") then
-    player.Character.Humanoid.WalkSpeed = 150 -- Çok hızlı koşma
-    player.Character.Humanoid.JumpPower = 100 -- Yüksek zıplama
-end
-
-print("--- BOT AKTİF: ÇAĞLAR SENİN İÇİN DEĞİŞİYOR! ---")
+print("--- BOT AKTİF: PARANI KONTROL ET! ---")
