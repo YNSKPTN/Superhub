@@ -1,25 +1,28 @@
--- [[ YNS V36 - ŞİFRE TAHMİN EDİCİ SALDIRI ]]
-local remote = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RewardedAdEvent")
+-- [[ YNS V38 - HER ŞEYİ TEKMELE (BRUTE ALL REMOTES) ]]
+print("--- TÜM KAPILAR TARANIYOR (İSİM BAĞIMSIZ) ---")
 
-print("--- ÖZEL ŞİFRE TAHMİNLERİ DENENİYOR ---")
+local allRemotes = {}
 
--- Denenecek şifre listesi (Yaygın kullanılanlar)
-local passwords = {
-    "Gem", "Gems", "Diamond", "Diamonds", "Reward", "Claim", 
-    "GiveReward", "Finished", "AdFinished", "100", "50", 
-    true, 1, 100, "Success", "Complete"
-}
+-- Oyundaki her şeyi tara ve ne kadar RemoteEvent varsa listeye al
+for _, v in pairs(game:GetDescendants()) do
+    if v:IsA("RemoteEvent") then
+        table.insert(allRemotes, v)
+        print("Hedef Listeye Alındı: " .. v:GetFullName())
+    end
+end
 
 task.spawn(function()
-    while task.wait(0.2) do
-        for _, pass in pairs(passwords) do
+    while task.wait(0.5) do -- Sunucuyu çökertmemek için yarım saniye
+        for _, remote in pairs(allRemotes) do
             pcall(function()
-                -- Hem tekli hem çiftli argüman deniyoruz
-                remote:FireServer(pass)
-                remote:FireServer("Gems", pass)
+                -- Her kapıya en popüler 'para' komutlarını gönderiyoruz
+                remote:FireServer("Gem", 1000)
+                remote:FireServer("Diamond", 1000)
+                remote:FireServer("AddCash", 1000)
+                remote:FireServer(true)
             end)
         end
     end
 end)
 
-print("--- SALDIRI TAM GAZ DEVAM EDİYOR! ---")
+print("--- ŞU AN TÜM KAPILAR TEST EDİLİYOR! ---")
