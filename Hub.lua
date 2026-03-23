@@ -1,32 +1,25 @@
--- [[ YNS V35 - DERİN KAPILI SALDIRI ]]
-local targetName = "RewardedAdEvent"
-local foundRemote = nil
+-- [[ YNS V36 - ŞİFRE TAHMİN EDİCİ SALDIRI ]]
+local remote = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RewardedAdEvent")
 
-print("--- KAPILI SALDIRI: " .. targetName .. " ARANIYOR ---")
+print("--- ÖZEL ŞİFRE TAHMİNLERİ DENENİYOR ---")
 
--- Tüm oyunu tara ve kapıyı bul
-for _, v in pairs(game:GetDescendants()) do
-    if v.Name == targetName and (v:IsA("RemoteEvent") or v:IsA("UnreliableRemoteEvent")) then
-        foundRemote = v
-        print("BULDUM! Kapı şurada saklanmış: " .. v:GetFullName())
-        break
-    end
-end
+-- Denenecek şifre listesi (Yaygın kullanılanlar)
+local passwords = {
+    "Gem", "Gems", "Diamond", "Diamonds", "Reward", "Claim", 
+    "GiveReward", "Finished", "AdFinished", "100", "50", 
+    true, 1, 100, "Success", "Complete"
+}
 
-if foundRemote then
-    task.spawn(function()
-        while task.wait(0.3) do
+task.spawn(function()
+    while task.wait(0.2) do
+        for _, pass in pairs(passwords) do
             pcall(function()
-                -- Sunucuyu kandırmak için farklı kombinasyonlar
-                foundRemote:FireServer("Reward")
-                foundRemote:FireServer(true)
-                foundRemote:FireServer(100)
-                foundRemote:FireServer("Claim")
-                foundRemote:FireServer()
+                -- Hem tekli hem çiftli argüman deniyoruz
+                remote:FireServer(pass)
+                remote:FireServer("Gems", pass)
             end)
         end
-    end)
-    print("--- SALDIRI BAŞLATILDI! ---")
-else
-    print("HATA: Kapı bu isimle bulunamadı. İsmi değişmiş olabilir.")
-end
+    end
+end)
+
+print("--- SALDIRI TAM GAZ DEVAM EDİYOR! ---")
