@@ -1,39 +1,41 @@
--- [[ YNS V320 - AGE EVOLUTION SINIRSIZ PARA BASICI ]]
-print("--- PARA MUSLUKLARI SONUNA KADAR AÇILIYOR... ---")
+-- [[ YNS V330 - AGE EVOLUTION SAKİN PARA SIZDIRICI ]]
+print("--- SESSİZ OPERASYON BAŞLATILDI: HATA ALMADAN KASILIYORUZ ---")
 
-local player = game.Players.LocalPlayer
 local replicatedStorage = game:GetService("ReplicatedStorage")
+local player = game.Players.LocalPlayer
 
+-- 1. ADIM: Hızı düşürerek (HTTP 429 almamak için) parayı sızdır
 task.spawn(function()
-    while task.wait(0.1) do -- Işık hızında para isteği
+    while task.wait(1.5) do -- Hızı 0.1'den 1.5 saniyeye çıkardık (Güvenli bölge)
         pcall(function()
-            -- 1. ADIM: Tüm Remote kapılarını 'Para Ver' diye darlıyoruz
+            -- Sadece en etkili kapıları hedef alıyoruz
             for _, v in pairs(game:GetDescendants()) do
                 if v:IsA("RemoteEvent") then
                     local n = v.Name:lower()
                     
-                    -- Para toplama, Satma veya Nakit alma kapıları
-                    if n:find("collect") or n:find("cash") or n:find("money") or n:find("sell") or n:find("earn") then
-                        v:FireServer() -- Sunucuya 'Paramı ver' sinyali
-                        v:FireServer(999999999) -- Bazı oyunlarda miktar girilebilir
+                    -- Sadece ana para toplama ve geliştirme kapıları
+                    if n:find("collect") or n:find("cash") or n:find("add") then
+                        v:FireServer()
+                        print("Sessizce Para Talep Edildi: " .. v.Name)
                     end
-                end
-            end
-            
-            -- 2. ADIM: Otomatik Damlatıcı (Dropper) Hızlandırma
-            -- Eğer oyunda paralar bir yere düşüyorsa, orayı sürekli 'temizle/topla'
-            local tycoon = workspace:FindFirstChild(player.Name .. "Tycoon") or workspace:FindFirstChild("Tycoons"):FindFirstChild(player.Name)
-            if tycoon then
-                local collector = tycoon:FindFirstChild("Collector", true)
-                if collector then
-                    -- Karakterini sürekli kolektöre değdiriyormuş gibi yap
-                    firetouchinterest(player.Character.HumanoidRootPart, collector, 0)
-                    task.wait(0.01)
-                    firetouchinterest(player.Character.HumanoidRootPart, collector, 1)
                 end
             end
         end)
     end
 end)
 
-print("--- BOT AKTİF: PARANI KONTROL ET! ---")
+-- 2. ADIM: Otomatik 'Rebirth' veya 'Auto' Butonlarını Zorla
+-- Ekranındaki o 'Auto' yazan yeri tetiklemeye çalışır
+task.spawn(function()
+    while task.wait(3) do
+        pcall(function()
+            local events = replicatedStorage:FindFirstChild("Events") or replicatedStorage
+            local autoEvent = events:FindFirstChild("AutoClick", true) or events:FindFirstChild("Auto", true)
+            if autoEvent then
+                autoEvent:FireServer(true)
+            end
+        end)
+    end
+end)
+
+print("--- BOT ŞU AN SESSİZ ÇALIŞIYOR, 10-15 SANİYE BEKLE ---")
