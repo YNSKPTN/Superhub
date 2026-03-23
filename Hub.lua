@@ -4,99 +4,71 @@ local runService = game:GetService("RunService")
 
 -- --- ARAYÜZ ---
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "YNS_V7_Ghost"
+screenGui.Name = "YNS_Final_Hub"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 450)
-mainFrame.Position = UDim2.new(0.5, -175, 0.15, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+mainFrame.Size = UDim2.new(0, 320, 0, 420)
+mainFrame.Position = UDim2.new(0.5, -160, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+mainFrame.BorderSizePixel = 0
 mainFrame.Draggable = true
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 45)
-title.Text = "👻 YNSKPTN V7.0 - GHOST MODE"
-title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+title.Text = "🛡️ YNS V5.5: EKSİKSİZ HUB 🕵️‍♂️"
+title.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.SourceSansBold
 title.Parent = mainFrame
 
--- --- DEĞİŞKENLER ---
-local noclip = false
-local flying = false
-local flySpeed = 50
+-- --- DEĞİŞKENLER & DURUMLAR ---
+local watchingPlayer = nil
+local cameraConn = nil
+local godActive = false
 
--- --- NO CLIP DÖNGÜSÜ ---
-runService.Stepped:Connect(function()
-    if noclip then
-        for _, part in pairs(player.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
+-- --- 1. SERT ÖLÜMSÜZLÜK (V3) ---
+local godBtn = Instance.new("TextButton")
+godBtn.Size = UDim2.new(0.9, 0, 0, 50)
+godBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
+godBtn.Text = "ULTIMATE GOD [KAPALI]"
+godBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+godBtn.TextColor3 = Color3.new(1, 1, 1)
+godBtn.Font = Enum.Font.SourceSansBold
+godBtn.Parent = mainFrame
 
--- --- BUTON OLUŞTURUCU ---
-local function createBtn(text, pos, color, func)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.9, 0, 0, 40)
-    btn.Position = pos
-    btn.Text = text .. " [KAPALI]"
-    btn.BackgroundColor3 = color
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.SourceSansBold
-    btn.Parent = mainFrame
+godBtn.MouseButton1Click:Connect(function()
+    godActive = not godActive
+    godBtn.Text = "ULTIMATE GOD " .. (godActive and "[AKTİF]" or "[KAPALI]")
+    godBtn.BackgroundColor3 = godActive and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(150, 0, 0)
     
-    local active = false
-    btn.MouseButton1Click:Connect(function()
-        active = not active
-        btn.Text = text .. (active and " [AÇIK]" or " [KAPALI]")
-        btn.BackgroundColor3 = active and Color3.fromRGB(0, 180, 0) or color
-        func(active)
-    end)
-end
-
--- 1. NO CLIP (DUVARLARDAN GEÇME)
-createBtn("🧱 NO CLIP", UDim2.new(0.05, 0, 0.12, 0), Color3.fromRGB(80, 80, 0), function(state)
-    noclip = state
-end)
-
--- 2. GÖRÜNMEZLİK
-createBtn("👻 GÖRÜNMEZLİK", UDim2.new(0.05, 0, 0.22, 0), Color3.fromRGB(50, 50, 50), function(state)
-    for _, part in pairs(player.Character:GetDescendants()) do
-        if part:IsA("BasePart") or part:IsA("Decal") then
-            part.Transparency = state and 1 or 0
+    task.spawn(function()
+        while godActive do
+            pcall(function()
+                local char = player.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    hum.MaxHealth = 999999
+                    hum.Health = 999999
+                    hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+                    if hum:GetState() == Enum.HumanoidStateType.Dead then
+                        hum:ChangeState(Enum.HumanoidStateType.Running)
+                    end
+                end
+            end)
+            task.wait(0.1)
         end
-    end
-    player.Character.HumanoidRootPart.Transparency = 1
+    end)
 end)
 
--- 3. UÇUŞ
-createBtn("🕊️ UÇUŞ", UDim2.new(0.05, 0, 0.32, 0), Color3.fromRGB(0, 80, 150), function(state)
-    flying = state
-    local root = player.Character.HumanoidRootPart
-    if flying then
-        local bv = Instance.new("BodyVelocity", root)
-        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        task.spawn(function()
-            while flying do
-                bv.Velocity = camera.CFrame.LookVector * (player.Character.Humanoid.MoveDirection.Magnitude > 0 and flySpeed or 0)
-                task.wait()
-            end
-            bv:Destroy()
-        end)
-    end
-end)
-
--- 4. İZLEME LİSTESİ (Alt Bölüm)
+-- --- 2. OYUNCU LİSTESİ (İZLE & TAM İÇİNE GİT) ---
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(0.9, 0, 0.45, 0)
-scroll.Position = UDim2.new(0.05, 0, 0.45, 0)
-scroll.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+scroll.Size = UDim2.new(0.9, 0, 0.6, 0)
+scroll.Position = UDim2.new(0.05, 0, 0.32, 0)
+scroll.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 scroll.Parent = mainFrame
 Instance.new("UIListLayout", scroll)
 
@@ -105,39 +77,64 @@ local function updateList()
     for _, v in pairs(game.Players:GetPlayers()) do
         if v ~= player then
             local f = Instance.new("Frame")
-            f.Size = UDim2.new(1, -10, 0, 35)
-            f.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            f.Size = UDim2.new(1, -10, 0, 45)
+            f.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
             f.Parent = scroll
             
-            local l = Instance.new("TextLabel")
-            l.Size = UDim2.new(0.6, 0, 1, 0)
-            l.Text = v.DisplayName
-            l.TextColor3 = Color3.new(1, 1, 1)
-            l.BackgroundTransparency = 1
-            l.TextScaled = true
-            l.Parent = f
+            local nameLabel = Instance.new("TextLabel")
+            nameLabel.Size = UDim2.new(0.4, 0, 1, 0)
+            nameLabel.Text = v.DisplayName
+            nameLabel.TextColor3 = Color3.new(1, 1, 1)
+            nameLabel.BackgroundTransparency = 1
+            nameLabel.TextScaled = true
+            nameLabel.Parent = f
             
-            local b = Instance.new("TextButton")
-            b.Size = UDim2.new(0.35, 0, 0.8, 0)
-            b.Position = UDim2.new(0.62, 0, 0.1, 0)
-            b.Text = "İZLE"
-            b.BackgroundColor3 = Color3.fromRGB(0, 100, 255)
-            b.Parent = f
+            -- İZLE BUTONU (Senkronize)
+            local watchBtn = Instance.new("TextButton")
+            watchBtn.Size = UDim2.new(0.28, 0, 0.8, 0)
+            watchBtn.Position = UDim2.new(0.42, 0, 0.1, 0)
+            watchBtn.Text = "İZLE"
+            watchBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+            watchBtn.Parent = f
             
-            b.MouseButton1Click:Connect(function()
-                if camera.CameraSubject == v.Character.Humanoid then
+            watchBtn.MouseButton1Click:Connect(function()
+                if watchingPlayer == v then
+                    watchingPlayer = nil
+                    if cameraConn then cameraConn:Disconnect() end
                     camera.CameraSubject = player.Character.Humanoid
-                    b.Text = "İZLE"
-                    b.BackgroundColor3 = Color3.fromRGB(0, 100, 255)
+                    watchBtn.Text = "İZLE"
                 else
-                    camera.CameraSubject = v.Character.Humanoid
-                    b.Text = "BIRAK"
-                    b.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+                    watchingPlayer = v
+                    watchBtn.Text = "BIRAK"
+                    if cameraConn then cameraConn:Disconnect() end
+                    cameraConn = runService.RenderStepped:Connect(function()
+                        if watchingPlayer == v and v.Character and v.Character:FindFirstChild("Head") then
+                            camera.CameraSubject = v.Character.Humanoid
+                            camera.CFrame = v.Character.Head.CFrame * CFrame.new(0, 0.5, 0)
+                        else
+                            cameraConn:Disconnect()
+                        end
+                    end)
+                end
+            end)
+
+            -- TAM İÇİNE GİT BUTONU
+            local tpBtn = Instance.new("TextButton")
+            tpBtn.Size = UDim2.new(0.25, 0, 0.8, 0)
+            tpBtn.Position = UDim2.new(0.72, 0, 0.1, 0)
+            tpBtn.Text = "GİT"
+            tpBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            tpBtn.Parent = f
+            
+            tpBtn.MouseButton1Click:Connect(function()
+                if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
                 end
             end)
         end
     end
 end
+
+updateList()
 game.Players.PlayerAdded:Connect(updateList)
 game.Players.PlayerRemoving:Connect(updateList)
-updateList()
