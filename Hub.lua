@@ -1,170 +1,138 @@
-local player = game.Players.LocalPlayer
-local camera = workspace.CurrentCamera
-local runService = game:GetService("RunService")
+local p = game.Players.LocalPlayer
+local c = workspace.CurrentCamera
+local rs = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
 
--- --- ARAYÜZ SİSTEMİ ---
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "YNS_Final_Hub_V7"
-screenGui.Parent = player:WaitForChild("PlayerGui")
-screenGui.ResetOnSpawn = false
+local sg = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
+sg.Name = "YNS_Godfather_V17"
+sg.ResetOnSpawn = false
 
--- 1. ANA PANEL
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 420)
-mainFrame.Position = UDim2.new(0.5, -160, 0.2, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-mainFrame.Draggable = true
-mainFrame.Active = true
-mainFrame.Parent = screenGui
+local main = Instance.new("Frame", sg)
+main.Size = UDim2.new(0, 300, 0, 520) -- Zıplama için biraz daha uzattık
+main.Position = UDim2.new(0.5, -150, 0.1, 0)
+main.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+main.Active = true
+main.Draggable = true
 
--- 2. KÜÇÜK AÇMA BUTONU
-local openBtn = Instance.new("TextButton")
-openBtn.Size = UDim2.new(0, 50, 0, 50)
-openBtn.Position = UDim2.new(0, 10, 0.5, -25)
-openBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
-openBtn.Text = "YNS"
-openBtn.TextColor3 = Color3.new(1, 1, 1)
-openBtn.Visible = false
-openBtn.Parent = screenGui
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 25)
-corner.Parent = openBtn
+local mini = Instance.new("TextButton", sg)
+mini.Size = UDim2.new(0, 50, 0, 50)
+mini.Position = UDim2.new(0, 10, 0.5, -25)
+mini.Text = "YNS"
+mini.Visible = false
+mini.BackgroundColor3 = Color3.fromRGB(40, 40, 70)
+mini.TextColor3 = Color3.new(1,1,1)
 
--- BAŞLIK VE KÜÇÜLTME TUŞU
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 45)
-title.Text = "🛡️ YNS V7.0: FULL HUB"
-title.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-title.TextColor3 = Color3.new(1, 1, 1)
-title.Font = Enum.Font.SourceSansBold
-title.Parent = mainFrame
+local close = Instance.new("TextButton", main)
+close.Size = UDim2.new(0, 30, 0, 30)
+close.Position = UDim2.new(1, -35, 0, 5)
+close.Text = "_"
+close.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+close.TextColor3 = Color3.new(1,1,1)
+close.MouseButton1Click:Connect(function() main.Visible = false mini.Visible = true end)
+mini.MouseButton1Click:Connect(function() main.Visible = true mini.Visible = false end)
 
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 40, 0, 40)
-closeBtn.Position = UDim2.new(1, -45, 0, 2)
-closeBtn.Text = "_"
-closeBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-closeBtn.TextColor3 = Color3.new(1, 1, 1)
-closeBtn.Parent = mainFrame
-
-closeBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    openBtn.Visible = true
-end)
-
-openBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = true
-    openBtn.Visible = false
-end)
-
--- --- [1] SERT ÖLÜMSÜZLÜK (V3) ---
-local godBtn = Instance.new("TextButton")
-godBtn.Size = UDim2.new(0.9, 0, 0, 50)
-godBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
-godBtn.Text = "ULTIMATE GOD [KAPALI]"
-godBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-godBtn.TextColor3 = Color3.new(1, 1, 1)
-godBtn.Font = Enum.Font.SourceSansBold
-godBtn.Parent = mainFrame
-
-local godActive = false
-godBtn.MouseButton1Click:Connect(function()
-    godActive = not godActive
-    godBtn.Text = "ULTIMATE GOD " .. (godActive and "[AKTİF]" or "[KAPALI]")
-    godBtn.BackgroundColor3 = godActive and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(120, 0, 0)
-    task.spawn(function()
-        while godActive do
-            pcall(function()
-                local char = player.Character
-                if char and char:FindFirstChildOfClass("Humanoid") then
-                    local hum = char:FindFirstChildOfClass("Humanoid")
-                    hum.MaxHealth = 999999
-                    hum.Health = 999999
-                    hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-                    if hum:GetState() == Enum.HumanoidStateType.Dead then hum:ChangeState(Enum.HumanoidStateType.Running) end
-                end
-            end)
-            task.wait(0.1)
+-- [NOCLIP]
+local noclipOn = false
+local noclipBtn = Instance.new("TextButton", main)
+noclipBtn.Size = UDim2.new(0.9, 0, 0, 30)
+noclipBtn.Position = UDim2.new(0.05, 0, 0.08, 0)
+noclipBtn.Text = "NOCLIP: OFF"
+noclipBtn.BackgroundColor3 = Color3.fromRGB(50, 30, 0)
+noclipBtn.TextColor3 = Color3.new(1,1,1)
+noclipBtn.MouseButton1Click:Connect(function()
+    noclipOn = not noclipOn
+    noclipBtn.Text = "NOCLIP: " .. (noclipOn and "ON" or "OFF")
+    noclipBtn.BackgroundColor3 = noclipOn and Color3.fromRGB(0, 100, 0) or Color3.fromRGB(50, 30, 0)
+    rs.Stepped:Connect(function()
+        if noclipOn and p.Character then
+            for _, v in pairs(p.Character:GetChildren()) do if v:IsA("BasePart") then v.CanCollide = false end end
         end
     end)
 end)
 
--- --- [2] OYUNCU LİSTESİ (İZLE & TAM İÇİNE GİT) ---
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(0.9, 0, 0.58, 0)
-scroll.Position = UDim2.new(0.05, 0, 0.32, 0)
-scroll.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-scroll.Parent = mainFrame
-Instance.new("UIListLayout", scroll)
+-- [SLIDER FONKSİYONU]
+local function makeSlider(text, pos, min, max, default, callback)
+    local label = Instance.new("TextLabel", main)
+    label.Size = UDim2.new(0.9, 0, 0, 15)
+    label.Position = pos
+    label.Text = text .. ": " .. default
+    label.TextColor3 = Color3.new(1,1,1)
+    label.BackgroundTransparency = 1
+    label.TextSize = 12
 
-local watchingPlayer = nil
-local cameraConn = nil
+    local sld = Instance.new("TextButton", main)
+    sld.Size = UDim2.new(0.9, 0, 0, 8)
+    sld.Position = pos + UDim2.new(0, 0, 0, 18)
+    sld.Text = ""
+    sld.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 
-local function updateList()
-    for _, c in pairs(scroll:GetChildren()) do if c:IsA("Frame") then c:Destroy() end end
+    local bar = Instance.new("Frame", sld)
+    bar.Size = UDim2.new((default-min)/(max-min), 0, 1, 0)
+    bar.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+    bar.BorderSizePixel = 0
+
+    sld.MouseButton1Down:Connect(function()
+        local move = uis.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                local pVal = math.clamp((input.Position.X - sld.AbsolutePosition.X) / sld.AbsoluteSize.X, 0, 1)
+                bar.Size = UDim2.new(pVal, 0, 1, 0)
+                local val = math.floor(min + (pVal * (max - min)))
+                label.Text = text .. ": " .. val
+                callback(val)
+            end
+        end)
+        uis.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then move:Disconnect() end end)
+    end)
+end
+
+-- AYARLAR (HIZ, ZIPLAMA, FOV, DIST)
+local sV, jV = 16, 50
+makeSlider("HIZ (SPEED)", UDim2.new(0.05, 0, 0.15, 0), 16, 300, 16, function(v) sV = v end)
+makeSlider("ZIPLAMA (JUMP)", UDim2.new(0.05, 0, 0.22, 0), 50, 500, 50, function(v) jV = v end)
+local getFOV = 80; makeSlider("FOV", UDim2.new(0.05, 0, 0.29, 0), 70, 120, 80, function(v) getFOV = v end)
+local getDist = 15; makeSlider("MESAFE", UDim2.new(0.05, 0, 0.36, 0), 5, 100, 15, function(v) getDist = v end)
+
+task.spawn(function()
+    while task.wait() do
+        pcall(function() 
+            local h = p.Character.Humanoid
+            h.WalkSpeed = sV
+            h.JumpPower = jV
+            h.UseJumpPower = true 
+        end)
+    end
+end)
+
+-- [OYUNCU LİSTESİ]
+local sc = Instance.new("ScrollingFrame", main)
+sc.Size = UDim2.new(0.9, 0, 0.4, 0)
+sc.Position = UDim2.new(0.05, 0, 0.45, 0)
+sc.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Instance.new("UIListLayout", sc)
+
+local watching, camC = nil, nil
+local function up()
+    for _, child in pairs(sc:GetChildren()) do if child:IsA("Frame") then child:Destroy() end end
     for _, v in pairs(game.Players:GetPlayers()) do
-        if v ~= player then
-            local f = Instance.new("Frame")
-            f.Size = UDim2.new(1, -10, 0, 45)
-            f.BackgroundColor3 = Color3.fromRGB(35, 35, 55)
-            f.Parent = scroll
-            
-            local nameLabel = Instance.new("TextLabel")
-            nameLabel.Size = UDim2.new(0.4, 0, 1, 0)
-            nameLabel.Text = v.DisplayName
-            nameLabel.TextColor3 = Color3.new(1, 1, 1)
-            nameLabel.BackgroundTransparency = 1
-            nameLabel.TextScaled = true
-            nameLabel.Parent = f
-            
-            -- SENKRONİZE İZLE
-            local watchBtn = Instance.new("TextButton")
-            watchBtn.Size = UDim2.new(0.28, 0, 0.8, 0)
-            watchBtn.Position = UDim2.new(0.42, 0, 0.1, 0)
-            watchBtn.Text = "İZLE"
-            watchBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-            watchBtn.Parent = f
-            
-            watchBtn.MouseButton1Click:Connect(function()
-                if watchingPlayer == v then
-                    watchingPlayer = nil
-                    if cameraConn then cameraConn:Disconnect() end
-                    camera.CameraSubject = player.Character.Humanoid
-                    camera.CameraType = Enum.CameraType.Custom
-                    watchBtn.Text = "İZLE"
-                else
-                    watchingPlayer = v
-                    watchBtn.Text = "BIRAK"
-                    if cameraConn then cameraConn:Disconnect() end
-                    cameraConn = runService.RenderStepped:Connect(function()
-                        if watchingPlayer == v and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                            local root = v.Character.HumanoidRootPart
-                            local lookPos = root.Position + (root.CFrame.LookVector * 15)
-                            local cameraPos = root.Position + (root.CFrame.LookVector * -10) + Vector3.new(0, 6, 0)
-                            camera.CFrame = CFrame.new(cameraPos, lookPos)
-                        else
-                            cameraConn:Disconnect()
-                        end
+        if v ~= p then
+            local f = Instance.new("Frame", sc); f.Size = UDim2.new(1, -5, 0, 35); f.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+            local nl = Instance.new("TextLabel", f); nl.Size = UDim2.new(0.4, 0, 1, 0); nl.Text = v.DisplayName; nl.TextColor3 = Color3.new(1,1,1); nl.TextScaled = true; nl.BackgroundTransparency = 1
+            local wB = Instance.new("TextButton", f); wB.Size = UDim2.new(0.25, 0, 0.8, 0); wB.Position = UDim2.new(0.45, 0, 0.1, 0); wB.Text = "İZLE"; wB.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+            wB.MouseButton1Click:Connect(function()
+                if watching == v then watching = nil; if camC then camC:Disconnect() end; c.CameraSubject = p.Character.Humanoid; wB.Text = "İZLE"
+                else watching = v; wB.Text = "BIRAK"; if camC then camC:Disconnect() end
+                    camC = rs.RenderStepped:Connect(function()
+                        if watching == v and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                            local r = v.Character.HumanoidRootPart
+                            c.FieldOfView = getFOV
+                            c.CFrame = CFrame.new(r.Position + (r.CFrame.LookVector * -getDist) + Vector3.new(0, getDist/2.5, 0), r.Position + (r.CFrame.LookVector * 20))
+                        else camC:Disconnect() end
                     end)
                 end
             end)
-
-            -- TAM İÇİNE GİT
-            local tpBtn = Instance.new("TextButton")
-            tpBtn.Size = UDim2.new(0.25, 0, 0.8, 0)
-            tpBtn.Position = UDim2.new(0.72, 0, 0.1, 0)
-            tpBtn.Text = "GİT"
-            tpBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-            tpBtn.Parent = f
-            tpBtn.MouseButton1Click:Connect(function()
-                if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
-                end
-            end)
+            local tB = Instance.new("TextButton", f); tB.Size = UDim2.new(0.25, 0, 0.8, 0); tB.Position = UDim2.new(0.72, 0, 0.1, 0); tB.Text = "GİT"; tB.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            tB.MouseButton1Click:Connect(function() if v.Character then p.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame end end)
         end
     end
 end
-
-updateList()
-game.Players.PlayerAdded:Connect(updateList)
-game.Players.PlayerRemoving:Connect(updateList)
+up(); game.Players.PlayerAdded:Connect(up); game.Players.PlayerRemoving:Connect(up)
