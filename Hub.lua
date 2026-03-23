@@ -1,38 +1,17 @@
--- [[ YNS V41 - YENİ HEDEF & ANTİ-KİCK TARAYICI ]]
-print("--- YENİ HEDEF TARANIYOR... ---")
+-- [[ YNS V42 - ADMIN PARA BASICI ]]
+local adminRemote = game:GetService("ReplicatedStorage"):WaitForChild("AdminRemotes"):WaitForChild("SetMoney")
 
--- Atılma engelleyici: Sunucu seni atmaya çalışırsa engellemeye çalışır
-local mt = getrawmetatable(game)
-setreadonly(mt, false)
-local old = mt.__namecall
-mt.__namecall = newcclosure(function(self, ...)
-    local method = getnamecallmethod()
-    if method == "Kick" or method == "kick" then 
-        warn("SUNUCU SENİ ATMAYA ÇALIŞTI AMA ENGELLEDİM! 😎")
-        return nil 
+print("--- ADMIN YETKİSİYLE PARA BASILIYOR ---")
+
+task.spawn(function()
+    while task.wait(0.1) do -- Saniyede 10 kez gönder
+        pcall(function()
+            -- Bu kapı muhtemelen iki değer bekliyor: (Oyuncu, Miktar)
+            -- Veya sadece (Miktar) bekliyor. Biz ikisini de deniyoruz.
+            adminRemote:FireServer(999999) 
+            adminRemote:FireServer(game.Players.LocalPlayer, 999999)
+        end)
     end
-    return old(self, ...)
 end)
 
--- Sistem Açığı Tarama Fonksiyonu
-for _, v in pairs(game:GetDescendants()) do
-    if v:IsA("RemoteEvent") or v:IsA("UnreliableRemoteEvent") then
-        local n = v.Name:lower()
-        -- Para, elmas ve ödül anahtar kelimeleri
-        if n:find("money") or n:find("cash") or n:find("gem") or n:find("diamond") or n:find("reward") or n:find("coin") then
-            print("ZAYIF NOKTA YAKALANDI: " .. v:GetFullName())
-            
-            -- Saldırı başlat (Hızı güvenli seviyede: 0.5 saniye)
-            task.spawn(function()
-                while task.wait(0.5) do
-                    pcall(function()
-                        v:FireServer(999)
-                        v:FireServer(true)
-                        v:FireServer("Claim")
-                    end)
-                end
-            end)
-        end
-    end
-end
-print("--- TARAMA BİTTİ. ŞİMDİ PARANI KONTROL ET! ---")
+print("--- İŞLEM TAMAM! PARANI VE KONSOLU KONTROL ET ---")
