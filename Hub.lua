@@ -1,47 +1,37 @@
--- [[ YNS V90 - ELMAS DONDURMA VE HARCAMA ENGELLEYİCİ ]]
-print("--- ELMASLAR BUZ DOLABINA KONULDU: DONDURULUYOR ---")
+-- [[ YNS V300 - AGE EVOLUTION TYCOON ÖZEL HİLE ]]
+print("--- ÇAĞ ATLAMA OPERASYONU BAŞLATILDI ---")
 
+local replicatedStorage = game:GetService("ReplicatedStorage")
 local player = game.Players.LocalPlayer
-local gemValue = nil
 
--- 1. ADIM: Mevcut Elmas Miktarını Tespit Et ve Sabitle
-for _, v in pairs(player:GetDescendants()) do
-    if v:IsA("IntValue") or v:IsA("NumberValue") then
-        if v.Name:lower():find("gem") or v.Name:lower():find("diamond") then
-            gemValue = v
-            local initialAmount = v.Value
-            print("DONDURULAN ELMAS MİKTARI: " .. initialAmount)
-            
-            -- Değer her değiştiğinde eski haline getir
-            v.Changed:Connect(function(newVal)
-                if newVal < initialAmount then
-                    v.Value = initialAmount
-                    print("ELMAS AZALMASI ENGELLENDİ! 😎")
+-- 1. ADIM: Otomatik Para Toplama ve Üretim Hızlandırma
+task.spawn(function()
+    while task.wait(0.1) do 
+        pcall(function()
+            -- Oyundaki tüm 'Event'leri tara ve tetikle
+            for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("RemoteEvent") then
+                    local n = v.Name:lower()
+                    
+                    -- Para toplama (Collect), Nakit (Cash), Para (Money)
+                    if n:find("collect") or n:find("money") or n:find("cash") or n:find("claim") then
+                        v:FireServer()
+                    end
+                    
+                    -- Çağ atlama veya Birim üretme (Evolution/Spawn)
+                    if n:find("evolve") or n:find("upgrade") or n:find("buy") or n:find("spawn") then
+                        v:FireServer()
+                    end
                 end
-            end)
-        end
+            end
+        end)
     end
-end
-
--- 2. ADIM: Harcama Sinyallerini (RemoteEvents) Blokla
-local mt = getrawmetatable(game)
-setreadonly(mt, false)
-local old = mt.__namecall
-
-mt.__namecall = newcclosure(function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
-    
-    -- Eğer sunucuya 'Satın Al' veya 'Harcama' mesajı gidiyorsa engelle
-    if method == "FireServer" then
-        local name = self.Name:lower()
-        if name:find("buy") or name:find("purchase") or name:find("spend") or name:find("usegem") then
-            warn("HARCAMA SİNYALİ YAKALANDI VE İPTAL EDİLDİ: " .. self.Name)
-            return nil -- Mesajın gitmesini engelle
-        end
-    end
-    
-    return old(self, unpack(args))
 end)
 
-print("--- ELMASLARIN ŞU AN DONMUŞ OLMALI. BİR ŞEY ALMAYI DENE! ---")
+-- 2. ADIM: Süper Hız ve Görünmezlik (Etrafta kimseye çarpmadan gez)
+if player.Character and player.Character:FindFirstChild("Humanoid") then
+    player.Character.Humanoid.WalkSpeed = 150 -- Çok hızlı koşma
+    player.Character.Humanoid.JumpPower = 100 -- Yüksek zıplama
+end
+
+print("--- BOT AKTİF: ÇAĞLAR SENİN İÇİN DEĞİŞİYOR! ---")
