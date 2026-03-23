@@ -1,32 +1,35 @@
--- [[ YNS V65 - COOK BURGERS OTOMATİK İŞÇİ ]]
-print("--- AUTO-FARM BAŞLATILDI: PARALAR TOPLANIYOR ---")
+-- [[ YNS V70 - CLASHERS ROYALE HER ŞEYİ AÇMA ]]
+print("--- ÖDÜL SİSTEMİ MANİPÜLE EDİLİYOR... ---")
 
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local remoteEvents = replicatedStorage:WaitForChild("Events") -- Klasör adı farklıysa otomatik tarar
 
-task.spawn(function()
-    while task.wait(0.5) do
-        pcall(function()
-            -- 1. ADIM: Yakındaki malzemeleri otomatik pişir
-            for _, item in pairs(workspace:GetDescendants()) do
-                if item:FindFirstChild("Cookable") and (item.Position - character.HumanoidRootPart.Position).Magnitude < 15 then
-                    local cookEvent = item:FindFirstChild("Cook") or item:FindFirstChild("RemoteEvent")
-                    if cookEvent then
-                        cookEvent:FireServer()
-                    end
-                end
-            end
+-- 1. ADIM: Sandık ve Ödül Kapılarını Bul
+for _, v in pairs(replicatedStorage:GetDescendants()) do
+    if v:IsA("RemoteEvent") then
+        local n = v.Name:lower()
+        -- Ödül, Sandık veya Galibiyet sinyallerini yakala
+        if n:find("chest") or n:find("reward") or n:find("win") or n:find("claim") then
+            print("Ödül Kapısı Yakalandı: " .. v.Name)
             
-            -- 2. ADIM: Bitmiş burgerleri kasaya 'dokunmuş' gibi yap
-            -- (Bazı sürümlerde bu otomatik satış sağlar)
-            local register = workspace:FindFirstChild("CashRegister", true)
-            if register then
-                firetouchinterest(character.HumanoidRootPart, register, 0)
-                task.wait(0.1)
-                firetouchinterest(character.HumanoidRootPart, register, 1)
-            end
-        end)
+            -- Sürekli ödül talep et (Düşük hızda, atılmamak için)
+            task.spawn(function()
+                while task.wait(1) do
+                    pcall(function()
+                        v:FireServer(true) 
+                        v:FireServer("Legendary") -- Efsanevi kart denemesi
+                    end)
+                end
+            end)
+        end
     end
-end)
+end
 
-print("--- BOT AKTİF: MUTFAKTA DURMAN YETERLİ ---")
+-- 2. ADIM: Maç Hilesi (Saniyede Taç Alma)
+-- Eğer bir maçtaysan bu kod maçı anında bitirmeyi dener
+local matchEvent = replicatedStorage:FindFirstChild("EndMatch", true)
+if matchEvent then
+    matchEvent:FireServer(true, 3) -- 3 taçla kazandım sinyali
+end
+
+print("--- OPERASYON TAM GAZ DEVAM EDİYOR! ---")
