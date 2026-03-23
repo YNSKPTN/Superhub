@@ -1,28 +1,31 @@
--- [[ YNS V38 - HER ŞEYİ TEKMELE (BRUTE ALL REMOTES) ]]
-print("--- TÜM KAPILAR TARANIYOR (İSİM BAĞIMSIZ) ---")
+-- [[ YNS V40 - STEALTH SCANNER (GİZLİ VE YAVAŞ) ]]
+local p = game.Players.LocalPlayer
+print("--- GİZLİ TARAMA MODU: YAVAŞ VE DİKKATLİ ---")
 
-local allRemotes = {}
+-- Atılmamak için sadece belli başlı klasörlere bakalım
+local storage = game:GetService("ReplicatedStorage")
+local events = storage:FindFirstChild("Events") or storage
 
--- Oyundaki her şeyi tara ve ne kadar RemoteEvent varsa listeye al
-for _, v in pairs(game:GetDescendants()) do
+-- Hepsini birden değil, tek tek deneyeceğiz
+local targets = {}
+for _, v in pairs(events:GetDescendants()) do
     if v:IsA("RemoteEvent") then
-        table.insert(allRemotes, v)
-        print("Hedef Listeye Alındı: " .. v:GetFullName())
+        table.insert(targets, v)
     end
 end
 
 task.spawn(function()
-    while task.wait(0.5) do -- Sunucuyu çökertmemek için yarım saniye
-        for _, remote in pairs(allRemotes) do
-            pcall(function()
-                -- Her kapıya en popüler 'para' komutlarını gönderiyoruz
-                remote:FireServer("Gem", 1000)
-                remote:FireServer("Diamond", 1000)
-                remote:FireServer("AddCash", 1000)
-                remote:FireServer(true)
-            end)
-        end
+    for i, remote in ipairs(targets) do
+        -- Her kapı arasında 2 saniye bekle (Atılmamak için)
+        task.wait(2) 
+        
+        pcall(function()
+            print("Denetimden kaçarak deniyorum: " .. remote.Name)
+            -- Sadece 1 kez, çok basit bir istek gönder
+            remote:FireServer(1) 
+        end)
+        
+        -- Eğer hala oyundaysak devam et...
     end
+    print("--- TARAMA BİTTİ, GÜVENDESİN ---")
 end)
-
-print("--- ŞU AN TÜM KAPILAR TEST EDİLİYOR! ---")
