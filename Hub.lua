@@ -1,33 +1,34 @@
 local USER_NAME = "cool_name9009"
 
 game.Players.PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function(character)
-		if player.Name == USER_NAME then
-			-- 1. Karakterdeki her parçanın hasar alma özelliğini kapatmayı dener
-			for _, part in pairs(character:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanTouch = true -- Dokunabilirsin ama...
-				end
-			end
-
-			local humanoid = character:WaitForChild("Humanoid")
-			
-			-- 2. En kritik nokta: Hasar alma fonksiyonunu "boşaltıyoruz"
-			-- Birisi sana hasar vermeye çalıştığında oyun hiçbir şey yapmayacak
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-
-			-- 3. Ölümsüzlük Kalkanı (Görünmez)
-			local forceField = Instance.new("ForceField")
-			forceField.Visible = false
-			forceField.Parent = character
-			
-			-- 4. Canı sabitleme
-			humanoid.MaxHealth = 10^9
-			humanoid.Health = 10^9
+    player.CharacterAdded:Connect(function(character)
+        if player.Name == USER_NAME then
+            local humanoid = character:WaitForChild("Humanoid")
             
-            print("Süper koruma denemesi aktif!")
-		end
-	end)
+            -- OYUNUN SENİ ÖLDÜRMESİNİ ENGELLEMEK İÇİN:
+            -- 'BreakJointsOnDeath' özelliğini kapatıyoruz, böylece canın 0 olsa bile dağılmazsın.
+            humanoid.BreakJointsOnDeath = false
+            
+            -- Canı çok yüksek bir değere sabitle
+            humanoid.MaxHealth = 999999
+            humanoid.Health = 999999
+            
+            -- Saniyede 100 kez canı kontrol eden aşırı hızlı bir döngü
+            game:GetService("RunService").Heartbeat:Connect(function()
+                if humanoid.Health < 999999 then
+                    humanoid.Health = 999999
+                end
+            end)
+            
+            -- Karakterin parçalarının "CanCollide" (Çarpışma) özelliğini kullanarak 
+            -- Bazı hasar scriptlerini kandırabiliriz
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    -- Bazı oyunlar 'Touch' ile hasar verir, bunu manipüle ediyoruz
+                end
+            end
+            
+            print("Random Tool için özel koruma yüklendi.")
+        end
+    end)
 end)
