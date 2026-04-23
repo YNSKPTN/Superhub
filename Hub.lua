@@ -1,30 +1,33 @@
 local USER_NAME = "cool_name9009"
-local BIG_NUMBER = 999999999 -- İstediğin o devasa sayı
 
 game.Players.PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(function(character)
 		if player.Name == USER_NAME then
+			-- 1. Karakterdeki her parçanın hasar alma özelliğini kapatmayı dener
+			for _, part in pairs(character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanTouch = true -- Dokunabilirsin ama...
+				end
+			end
+
 			local humanoid = character:WaitForChild("Humanoid")
 			
-			-- 1. Maksimum canı ve mevcut canı o devasa sayıya çekiyoruz
-			humanoid.MaxHealth = BIG_NUMBER
-			humanoid.Health = BIG_NUMBER
-			
-			-- 2. Canın azalmasını engellemek için döngü
-			-- 0.000001 saniyede bir canı kontrol edip geri fulleyen çok hızlı bir döngü
-			task.spawn(function()
-				while character and character.Parent do
-					if humanoid.Health < BIG_NUMBER then
-						humanoid.Health = BIG_NUMBER
-					end
-					task.wait(0.000001) -- İstediğin o çok küçük bekleme süresi
-				end
-			end)
-			
-			-- 3. Ölüm animasyonunu kapatıyoruz (Kafa kopsa bile hayatta kal)
+			-- 2. En kritik nokta: Hasar alma fonksiyonunu "boşaltıyoruz"
+			-- Birisi sana hasar vermeye çalıştığında oyun hiçbir şey yapmayacak
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
 			humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+
+			-- 3. Ölümsüzlük Kalkanı (Görünmez)
+			local forceField = Instance.new("ForceField")
+			forceField.Visible = false
+			forceField.Parent = character
 			
-			print("cool_name9009 için Limitli-Sonsuz Can Aktif!")
+			-- 4. Canı sabitleme
+			humanoid.MaxHealth = 10^9
+			humanoid.Health = 10^9
+            
+            print("Süper koruma denemesi aktif!")
 		end
 	end)
 end)
